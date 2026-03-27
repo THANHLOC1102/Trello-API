@@ -1,33 +1,41 @@
-/**
- * Updated by trungquandev.com's author on August 17 2023
- * YouTube: https://youtube.com/@trungquandev
- * "A bit of fragrance clings to the hand that gives flowers!"
- */
-
+/* eslint-disable no-console */
 import express from 'express'
-import { mapOrder } from '~/utils/sorts.js'
+import exitHook from 'async-exit-hook'
+import { CONNECT_DB , CLOSE_DB} from './config/mongodb.js'
+import { env } from './config/environment.js'
+import { API_V1 } from './routes/v1/index.js'
+import { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware.js'
+const START_SERVER = () => {
+  const app = express()
 
-const app = express()
+  // xử lý dữ liệu JSON trong body của request
+  app.use(express.json())
+  // Routes
+  app.use('/v1', API_V1)
 
-const hostname = 'localhost'
-const port = 8017
+  // Middleware xử lý lỗi
+  app.use(errorHandlingMiddleware)
 
-app.get('/', (req, res) => {
-  // Test Absolute import mapOrder
-  // eslint-disable-next-line no-console
-  console.log(mapOrder(
-    [{ id: 'id-1', name: 'One' },
-      { id: 'id-2', name: 'Two' },
-      { id: 'id-3', name: 'Three' },
-      { id: 'id-4', name: 'Four' },
-      { id: 'id-5', name: 'Five' }],
-    ['id-5', 'id-4', 'id-2', 'id-3', 'id-1'],
-    'id'
-  ))
-  res.end('<h1>Hello World!</h1><hr>')
-})
+  app.listen(env.APP_PORT, env.APP_HOST, () => {
+    console.log(`3.Hello ${env.AUTHOR}, I am running at http://${ env.APP_HOST }:${ env.APP_PORT}/`)
+  })
 
-app.listen(port, hostname, () => {
-  // eslint-disable-next-line no-console
-  console.log(`Hello Trung Quan Dev, I am running at http://${ hostname }:${ port }/`)
-})
+  exitHook(() => {
+    console.log('4.Disconnecting from MongoDB.')
+    CLOSE_DB()
+  })
+}
+
+(async () => {
+  try {
+    console.log('1.Connecting to MongoDB...')
+    await CONNECT_DB()
+    console.log('2.Connected to MongoDB')
+    START_SERVER()
+  }
+  catch (err) {
+    console.error(err)
+    process.exit(0)
+  }
+
+})()
