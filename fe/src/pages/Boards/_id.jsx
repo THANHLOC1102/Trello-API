@@ -2,6 +2,7 @@ import Container from '@mui/material/Container';
 import AppBar from "../../components/AppBar/AppBar";
 import BoardBar from "./BoardBar/BoardBar";
 import BoardContent from "./BoardContent/BoardContent";
+import { mockData } from '../../apis/mock-data';
 function Board() {
   return (
 // disableGutters maxWidth={false} giúp chiếm toàn bộ chiều rộng trang
@@ -10,9 +11,9 @@ function Board() {
       
       <AppBar/>
 
-       <BoardBar/>
+       <BoardBar board={mockData?.board}/>
 
-       <BoardContent/>
+       <BoardContent board={mockData?.board}/>
 
 
     </Container>
